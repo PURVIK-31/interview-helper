@@ -1,5 +1,12 @@
 import FeedbackClient from "@/components/feedback-client";
+import { Metadata } from "next";
 
-export default function FeedbackPage({ params }: { params: { id: string } }) {
-  return <FeedbackClient id={params.id} />;
+type FeedbackPageProps = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function FeedbackPage({ params }: FeedbackPageProps) {
+  const { id } = await params;
+  return <FeedbackClient id={id} />;
 } 

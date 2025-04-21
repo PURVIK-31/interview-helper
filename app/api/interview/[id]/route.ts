@@ -4,10 +4,10 @@ import { generateFeedback } from "@/lib/gemini";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     // Fetch the interview from Firestore using Admin SDK
