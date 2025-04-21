@@ -1,0 +1,11 @@
+{
+  "buildCommand": "bun run build",
+  "devCommand": "bun run dev",
+  "installCommand": "bun install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "outputDirectory": ".next",
+  "environment": {
+    "NEXT_PUBLIC_APP_URL": "https://${VERCEL_URL}"
+  }
+} 
