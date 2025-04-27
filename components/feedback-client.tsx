@@ -1,136 +1,231 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { notFound } from "next/navigation";
-import { db } from "@/lib/firebase";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth-context";
+import ProtectedRoute from "@/components/protected-route";
+import Link from "next/link";
 
 interface FeedbackClientProps {
   id: string;
 }
 
-export default function FeedbackClient({ id }: FeedbackClientProps) {
-  const [feedback, setFeedback] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+interface FeedbackData {
+  overallScore: number;
+  feedbackDetails: Array<{
+    question: string;
+    answer: string;
+    feedback: {
+      strengths: string[];
+      improvements: string[];
+      score: number;
+      tips: string;
+    };
+  }>;
+  completedAt: string;
+}
+
+interface Interview {
+  userId: string;
+  role: string;
+  status: string;
+}
+
+function FeedbackContent({ id }: FeedbackClientProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [interview, setInterview] = useState<Interview | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
+    
     const fetchFeedback = async () => {
       try {
-        const interviewDoc = await getDoc(doc(db, "interviews", id));
+        setIsLoading(true);
+        const interviewRef = doc(db, "interviews", id);
+        const interviewDoc = await getDoc(interviewRef);
         
-        if (!interviewDoc.exists() || interviewDoc.data()?.status !== "completed") {
-          notFound();
+        if (!interviewDoc.exists()) {
+          setError("Interview not found");
           return;
         }
         
-        setFeedback({ id, ...interviewDoc.data() });
-      } catch (err) {
-        console.error(err);
+        const interviewData = interviewDoc.data() as Interview;
+        
+        // Check if the interview belongs to the current user
+        if (interviewData.userId !== user.uid) {
+          setError("You don't have permission to view this feedback");
+          return;
+        }
+        
+        // Check if the interview is completed
+        if (interviewData.status !== "completed") {
+          router.push(`/interview/${id}`);
+          return;
+        }
+        
+        setInterview(interviewData);
+        
+        // Extract feedback data
+        const feedbackData = {
+          overallScore: interviewDoc.data().overallScore,
+          feedbackDetails: interviewDoc.data().feedbackDetails,
+          completedAt: interviewDoc.data().completedAt,
+        } as FeedbackData;
+        
+        setFeedback(feedbackData);
+      } catch (error) {
+        console.error("Error fetching feedback:", error);
         setError("Failed to load feedback");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     
     fetchFeedback();
-  }, [id]);
-  
-  if (loading) {
+  }, [id, user, router]);
+
+  if (isLoading) {
     return (
-      <div className="container mx-auto py-12 text-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
-        <p className="mt-4">Loading feedback...</p>
+      <div className="container mx-auto max-w-3xl px-4 py-12">
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="text-center">
+            <h2 className="mb-2 text-xl font-semibold">Loading feedback...</h2>
+          </div>
+        </div>
       </div>
     );
   }
-  
+
   if (error) {
     return (
-      <div className="container mx-auto py-12 text-center">
-        <div className="rounded-lg bg-red-900/20 p-6">
-          <h2 className="text-xl font-bold text-red-400">Error</h2>
-          <p className="mt-2 text-red-300">{error}</p>
+      <div className="container mx-auto max-w-3xl px-4 py-12">
+        <div className="flex min-h-[50vh] flex-col items-center justify-center">
+          <div className="mb-6 text-center">
+            <h2 className="mb-2 text-xl font-semibold text-red-500">{error}</h2>
+            <p className="text-gray-400">
+              Please check that you have the correct link or go back to the dashboard.
+            </p>
+          </div>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+          >
+            Go to Dashboard
+          </button>
         </div>
       </div>
     );
   }
-  
-  if (!feedback || !feedback.feedbackDetails) {
-    return (
-      <div className="container mx-auto py-12 text-center">
-        <div className="rounded-lg bg-yellow-900/20 p-6">
-          <h2 className="text-xl font-bold text-yellow-400">Feedback Not Available</h2>
-          <p className="mt-2 text-yellow-300">
-            Feedback for this interview is not available yet. Please complete the interview first.
+
+  if (!interview || !feedback) {
+    return null;
+  }
+
+  return (
+    <div className="container mx-auto max-w-3xl px-4 py-12">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Interview Feedback</h1>
+          <p className="text-gray-400">
+            {interview.role} • {new Date(feedback.completedAt).toLocaleDateString()}
           </p>
         </div>
+        <div className="rounded-full bg-blue-900/30 px-4 py-2 text-xl font-bold text-blue-300">
+          {feedback.overallScore}/10
+        </div>
       </div>
-    );
-  }
-  
-  return (
-    <div className="container mx-auto max-w-4xl py-12">
-      <h1 className="mb-8 text-center text-3xl font-bold">Interview Feedback</h1>
-      
-      <div className="space-y-8">
-        {feedback.feedbackDetails.map((item: any, index: number) => (
-          <div key={index} className="overflow-hidden rounded-lg bg-gray-900">
-            <div className="border-b border-gray-800 bg-gray-800 p-4">
-              <h3 className="text-lg font-bold">
-                Question {index + 1}: {item.question}
-              </h3>
-            </div>
-            
-            <div className="space-y-4 p-6">
-              <div>
-                <h4 className="mb-2 font-medium text-gray-400">Your Answer:</h4>
-                <p className="rounded bg-gray-800 p-3">{item.answer}</p>
-              </div>
-              
-              <div>
-                <h4 className="mb-2 font-medium text-gray-400">Strengths:</h4>
-                <p className="rounded bg-green-900/20 p-3 text-green-300">
-                  {item.feedback.strengths}
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="mb-2 font-medium text-gray-400">Areas for Improvement:</h4>
-                <p className="rounded bg-yellow-900/20 p-3 text-yellow-300">
-                  {item.feedback.improvements}
-                </p>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <h4 className="font-medium text-gray-400">Score:</h4>
-                <div className="rounded-full bg-blue-600 px-3 py-1 text-sm font-medium">
-                  {item.feedback.score}/10
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="mb-2 font-medium text-gray-400">Tips:</h4>
-                <ul className="list-inside list-disc space-y-1 rounded bg-blue-900/20 p-3 text-blue-300">
-                  {item.feedback.tips.split('\n').map((tip: string, i: number) => (
-                    <li key={i}>{tip.trim()}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        ))}
+
+      <div className="mb-8 rounded-lg bg-gray-900 p-6">
+        <h2 className="mb-4 text-xl font-bold">Performance Summary</h2>
+        <p className="mb-4 text-gray-300">
+          Your overall interview performance score is {feedback.overallScore}/10. Below you'll find detailed feedback on each of your responses.
+        </p>
         
-        <div className="rounded-lg bg-gray-900 p-6">
-          <h2 className="mb-4 text-xl font-bold">Overall Performance</h2>
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-medium">Overall Score:</span>
-            <span className="rounded-full bg-blue-600 px-4 py-2 text-lg font-bold">
-              {feedback.overallScore}/10
-            </span>
+        <div className="flex flex-wrap gap-3">
+          <div className="rounded-full bg-blue-900/20 px-4 py-1 text-sm font-medium text-blue-300">
+            Detailed Feedback
+          </div>
+          <div className="rounded-full bg-green-900/20 px-4 py-1 text-sm font-medium text-green-300">
+            Strengths Highlighted
+          </div>
+          <div className="rounded-full bg-yellow-900/20 px-4 py-1 text-sm font-medium text-yellow-300">
+            Improvement Areas
           </div>
         </div>
       </div>
+
+      {feedback.feedbackDetails.map((item, index) => (
+        <div key={index} className="mb-6 rounded-lg bg-gray-900 p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-bold">Question {index + 1}</h3>
+            <div className="rounded-full bg-blue-900/30 px-3 py-1 text-sm font-medium text-blue-300">
+              Score: {item.feedback.score}/10
+            </div>
+          </div>
+          
+          <div className="mb-4 rounded-lg bg-gray-800 p-4">
+            <p className="mb-2 font-semibold">Question:</p>
+            <p className="text-gray-300">{item.question}</p>
+          </div>
+          
+          <div className="mb-4 rounded-lg bg-gray-800 p-4">
+            <p className="mb-2 font-semibold">Your Answer:</p>
+            <p className="text-gray-300">{item.answer}</p>
+          </div>
+          
+          <div className="mb-4">
+            <p className="mb-2 font-semibold">Strengths:</p>
+            <ul className="list-inside list-disc space-y-1 text-green-300">
+              {item.feedback.strengths.map((strength, i) => (
+                <li key={i}>{strength}</li>
+              ))}
+            </ul>
+          </div>
+          
+          <div className="mb-4">
+            <p className="mb-2 font-semibold">Areas for Improvement:</p>
+            <ul className="list-inside list-disc space-y-1 text-yellow-300">
+              {item.feedback.improvements.map((improvement, i) => (
+                <li key={i}>{improvement}</li>
+              ))}
+            </ul>
+          </div>
+          
+          <div>
+            <p className="mb-2 font-semibold">Tips:</p>
+            <p className="text-gray-300">{item.feedback.tips}</p>
+          </div>
+        </div>
+      ))}
+
+      <div className="mt-8 flex gap-4">
+        <Link
+          href="/dashboard"
+          className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-6 py-3 text-center font-medium text-white hover:bg-gray-700"
+        >
+          Back to Dashboard
+        </Link>
+        <Link
+          href="/interview/create"
+          className="flex-1 rounded-lg bg-blue-600 px-6 py-3 text-center font-medium text-white hover:bg-blue-700"
+        >
+          New Interview
+        </Link>
+      </div>
     </div>
+  );
+}
+
+export default function FeedbackClient({ id }: FeedbackClientProps) {
+  return (
+    <ProtectedRoute>
+      <FeedbackContent id={id} />
+    </ProtectedRoute>
   );
 } 

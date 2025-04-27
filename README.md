@@ -7,8 +7,21 @@ A full-stack real-time AI voice agent interview platform built with Next.js, Tai
 - User authentication with Firebase
 - Generate customized interview questions with Google Gemini AI
 - Real-time voice interviews with AI using Vapi
+- Voice-based interview creation without filling forms
 - Detailed feedback on interview performance
 - Track past interviews and progress
+
+## Voice Interview Feature
+
+The platform offers a streamlined voice-first experience:
+
+1. **Quick Start with Voice**: Instead of filling out forms, users can click the "Quick Start with Voice" button to start an interview directly using Vapi's voice capabilities.
+
+2. **Voice-based Configuration**: Users can speak to configure their interview - specifying job role, experience level, and technologies using natural conversation.
+
+3. **Seamless Voice Interview**: After configuration, the platform automatically transitions to a full voice-based interview experience.
+
+This feature makes the platform more accessible, reduces friction, and creates a more natural interview experience.
 
 ## Tech Stack
 
@@ -54,7 +67,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID=
 
 # Vapi Configuration
 NEXT_PUBLIC_VAPI_API_KEY=
-NEXT_PUBLIC_VAPI_WORKFLOW_ID=
+NEXT_PUBLIC_VAPI_ASSISTANT_ID=
+NEXT_PUBLIC_VAPI_CONFIG_ASSISTANT_ID=
 
 # Google Gemini AI Configuration
 NEXT_PUBLIC_GEMINI_API_KEY=
