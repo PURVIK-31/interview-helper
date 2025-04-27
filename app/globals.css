@@ -30,9 +30,21 @@
     --ring: 221 83% 53%; /* strong blue */
 
     /* Gradients */
-    --gradient-1: linear-gradient(to right, #3b82f6, #2563eb); /* blue gradient */
-    --gradient-2: linear-gradient(to right, #8b5cf6, #6366f1); /* purple to indigo */
-    --gradient-3: linear-gradient(to right bottom, #3b82f6, #14b8a6); /* blue to teal */
+    --gradient-1: linear-gradient(
+      to right,
+      #3b82f6,
+      #2563eb
+    ); /* blue gradient */
+    --gradient-2: linear-gradient(
+      to right,
+      #8b5cf6,
+      #6366f1
+    ); /* purple to indigo */
+    --gradient-3: linear-gradient(
+      to right bottom,
+      #3b82f6,
+      #14b8a6
+    ); /* blue to teal */
   }
 
   .dark {
@@ -59,9 +71,21 @@
     --ring: 224 76% 56%; /* keep vibrant blue */
 
     /* Dark mode gradients */
-    --gradient-1: linear-gradient(to right, #3b82f6, #1d4ed8); /* deeper blue gradient */
-    --gradient-2: linear-gradient(to right, #7c3aed, #4f46e5); /* deeper purple-indigo */
-    --gradient-3: linear-gradient(to right bottom, #2563eb, #0d9488); /* deeper blue-teal */
+    --gradient-1: linear-gradient(
+      to right,
+      #3b82f6,
+      #1d4ed8
+    ); /* deeper blue gradient */
+    --gradient-2: linear-gradient(
+      to right,
+      #7c3aed,
+      #4f46e5
+    ); /* deeper purple-indigo */
+    --gradient-3: linear-gradient(
+      to right bottom,
+      #2563eb,
+      #0d9488
+    ); /* deeper blue-teal */
   }
 }
 
@@ -82,7 +106,10 @@
     font-size: 1.05rem;
     line-height: 1.7;
     letter-spacing: -0.01em;
-    background-image: radial-gradient(rgba(0, 0, 0, 0) 1px, hsl(var(--background)) 1px);
+    background-image: radial-gradient(
+      rgba(0, 0, 0, 0) 1px,
+      hsl(var(--background)) 1px
+    );
     background-size: 30px 30px;
     background-position: 0 0;
   }
@@ -137,11 +164,13 @@
 
   .card-hover {
     @apply hover:shadow-xl hover:border-[hsl(var(--primary))/20] transform hover:-translate-y-1 transition-all duration-300;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 10px -5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+      0 5px 10px -5px rgba(0, 0, 0, 0.05);
   }
 
   .card-hover:hover {
-    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.2), 0 10px 20px -10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.2),
+      0 10px 20px -10px rgba(0, 0, 0, 0.1);
   }
 
   .glass {
@@ -164,13 +193,17 @@
   }
 
   .button-primary::after {
-    content: '';
+    content: "";
     position: absolute;
     top: -50%;
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0) 80%);
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.13) 0%,
+      rgba(255, 255, 255, 0) 80%
+    );
     transform: rotate(30deg);
     transition: transform 0.6s;
   }
@@ -192,7 +225,8 @@
   }
 
   @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 1;
       transform: scale(1);
     }
@@ -205,7 +239,8 @@
 
 @layer utilities {
   .text-glow {
-    text-shadow: 0 0 25px rgba(56, 189, 248, 0.5), 0 0 10px rgba(56, 189, 248, 0.3), 0 1px 5px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 0 25px rgba(56, 189, 248, 0.5),
+      0 0 10px rgba(56, 189, 248, 0.3), 0 1px 5px rgba(0, 0, 0, 0.1);
   }
 
   .text-glow-subtle {
@@ -213,7 +248,8 @@
   }
 
   .shadow-blue {
-    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3), 0 5px 10px -5px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3),
+      0 5px 10px -5px rgba(59, 130, 246, 0.2);
   }
 
   .font-display {
@@ -233,13 +269,18 @@
   }
 
   .btn-hover-effect::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
     transition: 0.5s;
   }
 
